@@ -1,0 +1,49 @@
+#!/usr/bin/python3
+import paramiko
+import argparse
+
+def ssh_execute_command(hostname, port, username, password, command):
+    # Erstellen Sie ein SSH-Client-Objekt
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    try:
+        # Verbinden Sie sich mit dem Server
+        client.connect(hostname, port=port, username=username, password=password)
+
+        # Führen Sie den Befehl aus
+        stdin, stdout, stderr = client.exec_command(command)
+        
+        # Lesen Sie die Ausgabe des Befehls
+        output = stdout.read().decode()
+        error = stderr.read().decode()
+
+        return output, error
+    finally:
+        # Schließen Sie die Verbindung
+        client.close()
+
+if __name__ == "__main__":
+    # Argumentparser einrichten
+    parser = argparse.ArgumentParser(description='Execute a command on a remote host via SSH.')
+    parser.add_argument('--hostname', required=True, help='Hostname or IP address of the remote host')
+    parser.add_argument('--port', type=int, default=22, help='SSH port, default is 22')
+    parser.add_argument('--username', required=True, help='Username for SSH login')
+    parser.add_argument('--password', required=True, help='Password for SSH login')
+    parser.add_argument('--command', required=True, help='Command to execute on the remote host')
+
+    # Argumente parsen
+    args = parser.parse_args()
+
+    # Werte aus den Argumenten beziehen
+    hostname = args.hostname
+    port = args.port
+    username = args.username
+    password = args.password
+    command = args.command
+
+    # Befehl ausführen und Ergebnis anzeigen
+    output, error = ssh_execute_command(hostname, port, username, password, command)
+    print(output)
+
